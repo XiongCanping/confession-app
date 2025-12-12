@@ -3,303 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>专属告白 | 星河予你</title>
+    <title>浪漫告白</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: "Microsoft YaHei", "PingFang SC", "SimHei", sans-serif;
+            font-family: "Microsoft Yahei", sans-serif;
         }
-
         body {
-            background: linear-gradient(135deg, #1a2a6c 0%, #b21f1f 50%, #fdbb2d 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            position: relative;
+            background: #fdf2f8;
+            overflow-x: hidden;
         }
-
-        /* 飘花/爱心特效容器 */
+        /* 粒子容器 */
+        #particle-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 1;
+        }
         .particle {
             position: absolute;
-            z-index: 1;
             pointer-events: none;
         }
-
-        /* 名字输入容器（仅发送方可见） */
-        .name-container {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 40px;
-            border-radius: 24px;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        /* 姓名输入容器 */
+        #nameContainer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
             text-align: center;
-            z-index: 10;
-            animation: fadeIn 1s ease;
+            background: #fff;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(255, 107, 153, 0.3);
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        #nameContainer.hidden {
+            display: none;
         }
-
-        .name-container h2 {
-            color: #d92b2b;
-            margin-bottom: 25px;
-            font-size: 28px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        #nameContainer h2 {
+            color: #e53e3e;
+            margin-bottom: 1rem;
         }
-
-        .name-input {
-            padding: 15px 25px;
-            border: 3px solid #ff6b8b;
-            border-radius: 36px;
-            width: 320px;
-            font-size: 20px;
+        #targetName {
+            padding: 0.8rem 1rem;
+            width: 280px;
+            border: 2px solid #fbb6ce;
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-bottom: 1rem;
             outline: none;
-            margin-bottom: 25px;
-            text-align: center;
-            transition: all 0.3s ease;
         }
-
-        .name-input:focus {
-            border-color: #d92b2b;
-            box-shadow: 0 0 15px rgba(217, 43, 43, 0.4);
+        #targetName:focus {
+            border-color: #e53e3e;
         }
-
-        .start-btn {
-            background: linear-gradient(to right, #ff6b8b, #d92b2b);
-            color: white;
+        #startBtn {
+            padding: 0.8rem 2rem;
+            background: #e53e3e;
+            color: #fff;
             border: none;
-            padding: 15px 50px;
-            border-radius: 36px;
-            font-size: 20px;
+            border-radius: 8px;
+            font-size: 1rem;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(217, 43, 43, 0.3);
+            transition: background 0.3s;
         }
-
-        .start-btn:hover {
-            transform: scale(1.08);
-            box-shadow: 0 8px 20px rgba(217, 43, 43, 0.5);
+        #startBtn:hover {
+            background: #c53030;
         }
-
-        /* 分享链接提示 */
         .share-tip {
-            margin-top: 25px;
-            color: #d92b2b;
-            font-size: 18px;
+            margin-top: 1rem;
+            color: #666;
             display: none;
-            animation: fadeIn 0.5s ease;
         }
-
-        .share-link {
-            margin-top: 15px;
-            padding: 12px;
-            background: #f8f8f8;
-            border-radius: 12px;
+        #shareLink {
+            display: none;
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background: #f5f5f5;
+            border-radius: 4px;
+            font-size: 0.9rem;
             color: #333;
-            font-size: 16px;
             word-break: break-all;
-            display: none;
-            animation: fadeIn 0.5s ease;
-            border: 1px solid #ff6b8b;
         }
-
         /* 告白弹窗 */
-        .confession-modal {
+        #confessionModal, #successModal {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.85);
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.3);
             display: none;
             justify-content: center;
             align-items: center;
-            z-index: 100;
+            z-index: 3;
         }
-
         .modal-content {
-            background: linear-gradient(135deg, #fff5f7 0%, #ffe6eb 100%);
-            padding: 50px;
-            border-radius: 36px;
+            background: #fff;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 30px rgba(255, 107, 153, 0.5);
             text-align: center;
-            box-shadow: 0 25px 70px rgba(255, 107, 139, 0.6);
-            position: relative;
-            animation: modalPop 1s ease-out;
-            max-width: 600px;
-            width: 90%;
-            border: 2px solid #ff6b8b;
+            max-width: 80%;
         }
-
-        @keyframes modalPop {
-            0% { transform: scale(0) rotate(15deg); opacity: 0; }
-            70% { transform: scale(1.1) rotate(-5deg); }
-            100% { transform: scale(1) rotate(0); opacity: 1; }
+        #confessionTitle {
+            color: #e53e3e;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
         }
-
-        .modal-content h1 {
-            color: #d92b2b;
-            margin-bottom: 30px;
-            font-size: 36px;
-            animation: textGlow 3s ease-in-out infinite alternate;
-        }
-
-        @keyframes textGlow {
-            from { text-shadow: 0 0 15px #ff6b8b, 0 0 30px #ff6b8b; }
-            to { text-shadow: 0 0 25px #d92b2b, 0 0 40px #d92b2b; }
-        }
-
-        /* 文案展示区域（逐段渐入） */
-        .confession-text {
-            color: #b72424;
-            font-size: 22px;
-            line-height: 2;
-            margin-bottom: 40px;
-            min-height: 120px;
+        #confessionText {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 2rem;
             opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.8s ease;
+            transition: opacity 0.5s;
         }
-
-        .confession-text.show {
+        #confessionText.show {
             opacity: 1;
-            transform: translateY(0);
         }
-
         .btn-group {
             display: flex;
+            gap: 1rem;
             justify-content: center;
-            gap: 30px;
-            margin-top: 20px;
         }
-
-        .accept-btn {
-            background: linear-gradient(to right, #ff6b8b, #d92b2b);
-            color: white;
+        .btn {
+            padding: 0.8rem 2rem;
             border: none;
-            padding: 18px 50px;
-            border-radius: 36px;
-            font-size: 22px;
+            border-radius: 8px;
+            font-size: 1rem;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(217, 43, 43, 0.3);
+            transition: all 0.3s;
         }
-
-        .accept-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 8px 20px rgba(217, 43, 43, 0.5);
+        #acceptBtn {
+            background: #e53e3e;
+            color: #fff;
         }
-
-        /* 强化版不愿意按钮（随机移动+变形+变色） */
-        .refuse-btn {
-            background: #ccc;
-            color: #666;
-            border: none;
-            padding: 18px 50px;
-            border-radius: 36px;
-            font-size: 22px;
-            position: relative;
-            transition: all 0.2s ease;
-            cursor: default;
-            box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+        #acceptBtn:hover {
+            background: #c53030;
         }
-
-        /* 成功提示弹窗 */
-        .success-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 200;
+        #refuseBtn {
+            background: #666;
+            color: #fff;
+            position: relative; /* 配合躲避逻辑 */
         }
-
-        .success-content {
-            background: linear-gradient(135deg, #fdf2f8 0%, #fef7fb 100%);
-            padding: 60px;
-            border-radius: 36px;
-            text-align: center;
-            animation: successFly 1.2s ease-out;
-            border: 3px solid #ff6b8b;
-        }
-
-        @keyframes successFly {
-            0% { transform: translateY(-150px) scale(0.8); opacity: 0; }
-            100% { transform: translateY(0) scale(1); opacity: 1; }
-        }
-
-        .success-content h1 {
-            color: #d92b2b;
-            font-size: 48px;
-            margin-bottom: 25px;
-            text-shadow: 0 3px 6px rgba(217, 43, 43, 0.3);
-        }
-
-        .success-content p {
-            color: #b72424;
-            font-size: 28px;
-            margin-bottom: 35px;
+        #successText {
+            color: #e53e3e;
+            font-size: 1.5rem;
             line-height: 1.8;
-        }
-
-        .heart {
-            color: #d92b2b;
-            font-size: 80px;
-            animation: heartBeat 2s ease-in-out infinite;
-        }
-
-        @keyframes heartBeat {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.4); }
-            100% { transform: scale(1); }
-        }
-
-        /* 隐藏元素 */
-        .hidden {
-            display: none !important;
         }
     </style>
 </head>
 <body>
-    <!-- 粒子特效容器 -->
+    <!-- 粒子容器 -->
     <div id="particle-container"></div>
 
-    <!-- 名字输入界面（仅发送方可见） -->
-    <div class="name-container" id="nameContainer">
-        <h2>💖 输入告白对象的名字 💖</h2>
-        <input type="text" class="name-input" id="targetName" placeholder="请输入TA的名字" required>
-        <button class="start-btn" id="startBtn">生成告白链接</button>
-        <div class="share-tip" id="shareTip">✨ 复制下方链接发给TA ✨</div>
-        <div class="share-link" id="shareLink"></div>
+    <!-- 姓名输入容器 -->
+    <div id="nameContainer">
+        <h2>输入TA的名字，生成告白链接 💓</h2>
+        <input type="text" id="targetName" placeholder="请输入TA的名字">
+        <button id="startBtn">生成告白链接</button>
+        <div class="share-tip" id="shareTip">复制下方链接发给TA吧 💌</div>
+        <div id="shareLink"></div>
     </div>
 
     <!-- 告白弹窗 -->
-    <div class="confession-modal" id="confessionModal">
+    <div id="confessionModal">
         <div class="modal-content">
-            <h1 id="confessionTitle"></h1>
-            <div class="confession-text" id="confessionText"></div>
+            <h2 id="confessionTitle"></h2>
+            <p id="confessionText"></p>
             <div class="btn-group">
-                <button class="accept-btn" id="acceptBtn">我愿意 💖</button>
-                <button class="refuse-btn" id="refuseBtn">不愿意</button>
+                <button class="btn" id="acceptBtn">我愿意 💖</button>
+                <button class="btn" id="refuseBtn">不愿意 😤</button>
             </div>
         </div>
     </div>
 
-    <!-- 成功提示弹窗 -->
-    <div class="success-modal" id="successModal">
-        <div class="success-content">
-            <h1>🎉 告白成功！🎉</h1>
+    <!-- 成功弹窗 -->
+    <div id="successModal">
+        <div class="modal-content">
             <p id="successText"></p>
-            <div class="heart">❤️</div>
-            <p style="margin-top:25px; font-size:24px;">愿我们岁岁年年，满心欢喜</p>
         </div>
     </div>
 
@@ -332,11 +219,11 @@
                 if (type === "heart") {
                     particle.innerHTML = "❤️";
                     particle.style.fontSize = `${size}px`;
-                    particle.style.animation = `fall${Math.random() * 25 + 15}s linear infinite`;
+                    particle.style.animation = `fall ${Math.random() * 25 + 15}s linear infinite`;
                 } else {
                     particle.style.background = `rgba(${255},${Math.floor(Math.random() * 150 + 100)},${Math.floor(Math.random() * 150 + 100)},${Math.random() * 0.8 + 0.2})`;
                     particle.style.borderRadius = type === "petal" ? "50% 0" : "50%";
-                    particle.style.animation = `fall${Math.random() * 20 + 10}s linear infinite`;
+                    particle.style.animation = `fall ${Math.random() * 20 + 10}s linear infinite`;
                 }
                 
                 container.appendChild(particle);
@@ -371,7 +258,7 @@
                 particle.style.pointerEvents = 'none';
                 const angle = Math.random() * Math.PI * 2;
                 const speed = Math.random() * 15 + 5;
-                particle.style.animation = `explode${Math.random() * 2 + 1}s ease-out forwards`;
+                particle.style.animation = `explode ${Math.random() * 2 + 1}s ease-out forwards`;
                 particle.style.transform = `translate(${Math.cos(angle) * speed * 10}px,${Math.sin(angle) * speed * 10}px) rotate(360deg)`;
                 container.appendChild(particle);
                 setTimeout(() => particle.remove(), 2000);
@@ -388,4 +275,132 @@
         `);
 
         // 从URL获取参数
-        function getUrlParam(name
+        function getUrlParam(name) {
+            const reg = new RegExp(`(^|&)${name}=([^&]*)(&|$)`);
+            const r = window.location.search.substr(1).match(reg);
+            if (r != null) return decodeURIComponent(r[2]);
+            return null;
+        }
+
+        // 页面加载时初始化
+        window.onload = function() {
+            createParticles();
+            
+            // 获取DOM元素
+            const nameContainer = document.getElementById('nameContainer');
+            const confessionModal = document.getElementById('confessionModal');
+            const successModal = document.getElementById('successModal');
+            const targetNameInput = document.getElementById('targetName');
+            const startBtn = document.getElementById('startBtn');
+            const confessionTitle = document.getElementById('confessionTitle');
+            const confessionText = document.getElementById('confessionText');
+            const acceptBtn = document.getElementById('acceptBtn');
+            const refuseBtn = document.getElementById('refuseBtn');
+            const successText = document.getElementById('successText');
+            const shareTip = document.getElementById('shareTip');
+            const shareLink = document.getElementById('shareLink');
+
+            // 当前文案索引
+            let textIndex = 0;
+
+            // 检查URL中是否有姓名参数（接收方）
+            const targetName = getUrlParam('name');
+            if (targetName) {
+                // 接收方：隐藏输入框，直接显示告白弹窗+第一段文案
+                nameContainer.classList.add('hidden');
+                confessionTitle.textContent = `${targetName}，我喜欢你！`;
+                showNextText();
+                confessionModal.style.display = 'flex';
+            } else {
+                // 发送方：显示输入框
+                nameContainer.classList.remove('hidden');
+            }
+
+            // 显示下一段文案
+            function showNextText() {
+                if (textIndex < confessionTexts.length) {
+                    confessionText.textContent = confessionTexts[textIndex];
+                    confessionText.classList.add('show');
+                    // 生成粒子特效
+                    createParticles(textIndex % 2 === 0 ? "petal" : "heart");
+                    textIndex++;
+                } else {
+                    // 所有文案展示完，跳转到成功弹窗
+                    const name = targetName || targetNameInput.value.trim();
+                    successText.textContent = `${name}，余生请多指教 💞`;
+                    confessionModal.style.display = 'none';
+                    successModal.style.display = 'flex';
+                    createParticles("heart");
+                }
+            }
+
+            // 生成告白链接按钮点击事件（发送方）
+            startBtn.addEventListener('click', function() {
+                const inputName = targetNameInput.value.trim();
+                if (!inputName) {
+                    alert('请输入TA的名字哦 💓');
+                    return;
+                }
+                
+                // 生成带姓名参数的链接
+                const currentUrl = window.location.href.split('?')[0];
+                const confessionUrl = `${currentUrl}?name=${encodeURIComponent(inputName)}`;
+                
+                // 显示分享提示和链接
+                shareTip.style.display = 'block';
+                shareLink.style.display = 'block';
+                shareLink.textContent = confessionUrl;
+                
+                // 自动复制链接
+                navigator.clipboard.writeText(confessionUrl).then(() => {
+                    alert('链接已复制到剪贴板，可以发给TA啦 💌');
+                }).catch(() => {
+                    alert('链接已生成，请手动复制发给TA 💌');
+                });
+            });
+
+            // "不愿意"按钮强化躲避逻辑
+            refuseBtn.addEventListener('mouseenter', function(e) {
+                const btn = e.target;
+                const windowWidth = window.innerWidth;
+                const windowHeight = window.innerHeight;
+                const btnWidth = btn.offsetWidth;
+                const btnHeight = btn.offsetHeight;
+
+                // 随机位置（确保在可视区域内）
+                const randomX = Math.random() * (windowWidth - btnWidth * 2) + btnWidth;
+                const randomY = Math.random() * (windowHeight - btnHeight * 2) + btnHeight;
+                // 随机大小
+                const randomSize = Math.random() * 0.5 + 0.8;
+                // 随机颜色
+                const randomColor = `rgb(${Math.floor(Math.random() * 150)},${Math.floor(Math.random() * 150)},${Math.floor(Math.random() * 150)})`;
+
+                // 应用随机样式
+                btn.style.position = 'absolute';
+                btn.style.left = `${randomX}px`;
+                btn.style.top = `${randomY}px`;
+                btn.style.transform = `scale(${randomSize})`;
+                btn.style.backgroundColor = randomColor;
+                btn.style.color = '#fff';
+            });
+
+            // "我愿意"按钮点击事件（逐段展示文案）
+            acceptBtn.addEventListener('click', function(e) {
+                // 生成爆炸特效
+                createExplosion(e.clientX, e.clientY);
+                // 隐藏当前文案，准备显示下一段
+                confessionText.classList.remove('show');
+                setTimeout(showNextText, 500);
+            });
+
+            // 阻止不愿意按钮的点击事件
+            refuseBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                alert('你不能拒绝我 😜');
+                return false;
+            });
+        };
+    </script>
+</body>
+</html>
